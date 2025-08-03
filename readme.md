@@ -53,7 +53,7 @@ updated "."
 1. **Install Rust** – <https://rustup.rs>  
 2. **Clone & build**
 
-       git clone https://github.com/yourname/dirstamp.git
+       git clone https://github.com/Crinklebine/dirstamp.git
        cd dirstamp
        cargo build --release
 
