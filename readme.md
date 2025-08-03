@@ -108,3 +108,8 @@ Please run the above before submitting.
 
 Licensed under the **MIT License** – see [`LICENSE`](LICENSE).
 
+---
+<br>
+<p align="center">
+  <img src="assets/dirstamp.png" alt="dirstamp poster" width="400">
+</p>
