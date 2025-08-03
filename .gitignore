@@ -1,0 +1,10 @@
+# Rust / Cargo
+/target/
+/**/*.rs.bk
+**/*.swp
+# If you built with cross-compile toolchains
+**/*.exe
+**/*.dll
+**/*.pdb
+# Exclude the expanded dirstamp_test folder
+test/dirstamp_test
