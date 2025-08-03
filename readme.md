@@ -21,7 +21,7 @@ date of your folders is useful to view data history by folder.
 | Feature               | Details                                                                                     |
 |-----------------------|---------------------------------------------------------------------------------------------|
 | **Deep-first walk**   | Children processed before parents so nested folders finish first.                           |
-| **File-only logic**   | Uses the newest file in a directory; if no files are present the folder remains unchanged.  |
+| **Child-first logic** | Uses the newest **file** in a directory; if no files exist, falls back to the newest **immediate sub-folder**.      |
 | **Skip when current** | Touches a folder only if its timestamp differs by more than one second.                     |
 | **Cross-platform**    | Builds on Windows, Linux, and macOS (safe Rust, no platform-specific code paths).           |
 | **Single binary**     | No runtime, no PowerShell execution-policy fuss—just run the EXE (or ELF/Mach-O).           |
@@ -37,11 +37,15 @@ date of your folders is useful to view data history by folder.
 
 Console output:
 
-    updated D:\MigratedDocs\2018
-    updated D:\MigratedDocs\Projects
-    updated D:\MigratedDocs\Projects\Photos
-    ...
-
+```text
+updated ".\projects\beta"
+updated ".\projects\alpha"
+updated ".\projects"
+updated ".\media\photos"
+updated ".\media"
+updated ".\docs"
+updated "."
+```
 ---
 
 ## Building from source
@@ -83,9 +87,8 @@ Console output:
 ## Road-map / ideas
 
 * `--dry-run` preview mode  
-* `--oldest` flag (use earliest file instead)  
-* Optional inheritance from sub-folders when no files exist  
-* CI build & release workflow  
+* `--oldest` flag (use earliest file instead)   
+* Continuous Integration build & release workflow  
 * Publish on crates.io  
 
 ---
