@@ -69,9 +69,16 @@ updated "."
 
 ## Usage
 
-    dirstamp [PATH]
+```text
+dirstamp [OPTIONS] [PATH]
 
-*`PATH`* — root directory to process (default: current directory)
+Options
+  -h, --help       Show this help message and exit
+  -V, --version    Show program version and exit
+
+Arguments
+  PATH             Root directory to process (default: current dir)
+  ```
 
 ### Algorithm (simple version)
 
