@@ -105,7 +105,6 @@ Arguments
 * `--dry-run` preview mode  
 * `--oldest` flag (use earliest file instead)   
 * Continuous Integration build & release workflow  
-* Publish on crates.io  
 
 ---
 
