@@ -1,11 +1,11 @@
 # dirstamp
 
 `dirstamp` is a tiny cross-platform command-line utility that **copies the
-_last-modified_ time (`mtime`) of the newest *file* in each directory (folder) onto the
+_last-modified_ time (`mtime`) of the newest *item* in each directory (folder) onto the
 directory itself**.
 
 It’s perfect after migrations, restores, or bulk copies where all your folders
-suddenly say “today” even though the files inside span years. Seeing an accurate
+suddenly say “today” even though the files inside may span years. Seeing an accurate
 date of your folders is useful to view data history by folder.
 
 > **Example**  
