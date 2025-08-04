@@ -1,4 +1,5 @@
-<br>![Crates.io](https://img.shields.io/crates/v/dirstamp)<br>
+[![Crates.io](https://img.shields.io/crates/v/dirstamp.svg)](https://crates.io/crates/dirstamp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 # dirstamp
 
@@ -29,6 +30,12 @@ date of your folders is useful to view data history by folder.
 | **Single binary**     | No runtime, no PowerShell execution-policy fuss—just run the EXE (or ELF/Mach-O).           |
 
 ---
+
+## Install with Cargo
+
+```bash
+cargo install dirstamp    # installs the latest published version
+```
 
 ## Quick start (Windows)
 
