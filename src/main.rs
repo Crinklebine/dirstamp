@@ -13,6 +13,23 @@ use std::time::SystemTime;
 use filetime::FileTime;
 use walkdir::WalkDir;
 
+/// Program version is taken from Cargo.toml
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// One-paragraph help string shown with -h / --help.
+const USAGE: &str = r#"dirstamp [OPTIONS] [PATH]
+
+Synchronise each folder’s modified time to its newest item
+(files take priority; if none, newest immediate sub-folder).
+
+Options
+  -h, --help       Show this help message and exit
+  -V, --version    Show version and exit
+
+Arguments
+  PATH             Root directory to process (default: current dir)
+"#;
+
 /// Return the newest modification time among direct children of `dir`.
 /// Files take priority; if no files are present, fall back to sub-folders.
 /// Returns `None` for an entirely empty directory.
@@ -54,9 +71,35 @@ fn sync_folder_mtime(folder: &Path) -> io::Result<()> {
     Ok(())
 }
 
+
 fn main() -> io::Result<()> {
-    // Default to current directory; allow optional path argument.
-    let root = std::env::args().nth(1).unwrap_or_else(|| ".".into());
+    // Parse command-line arguments.
+    let mut args = std::env::args().skip(1);          // iterator of remaining CLI args
+    let mut root   = ".".to_string();                 // default path
+
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "-h" | "--help" => {
+                println!("{USAGE}");
+                return Ok(());
+            }
+            "-V" | "--version" => {
+                println!("dirstamp {VERSION}");
+                return Ok(());
+            }
+            _ if arg.starts_with('-') => {
+                eprintln!("Unknown option: {arg}\n\n{USAGE}");
+                std::process::exit(1);
+            }
+            _ => {
+                // first non-flag = path argument
+                root = arg;
+                break;                 // stop option parsing
+            }
+        }
+    }
+
+    // build remaining program using `root`
     let root_path = Path::new(&root);
 
     // Collect every directory, children before parents (deep-first).
