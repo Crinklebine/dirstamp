@@ -1,8 +1,18 @@
 [package]
-name = "dirstamp"
-version = "0.1.0"
-edition = "2024"
+name        = "dirstamp"
+version     = "0.1.0"
+edition     = "2021"                       # 2024 edition is still nightly-only
+description = "Sync a directory's modified time to its newest (or earliest) item."
+readme      = "README.md"
+license     = "MIT"
+repository  = "https://github.com/Crinklebine/dirstamp"
+homepage    = "https://github.com/Crinklebine/dirstamp"
+keywords    = ["timestamp", "folder", "cli", "filesystem"]
+categories  = ["filesystem", "command-line-utilities"]
+
+# Optional: avoid uploading large or binary test data
+exclude = ["assets/*", "test/*", "**/*.zip"]
 
 [dependencies]
-walkdir = "2"
+walkdir  = "2"
 filetime = "0.2"
