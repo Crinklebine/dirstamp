@@ -1,3 +1,5 @@
+<br>![Crates.io](https://img.shields.io/crates/v/dirstamp)<br>
+
 # dirstamp
 
 `dirstamp` is a tiny cross-platform command-line utility that **copies the
