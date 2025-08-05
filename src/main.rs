@@ -88,8 +88,14 @@ fn main() -> io::Result<()> {
                 return Ok(());
             }
             "-V" | "--version" => {
-                println!("dirstamp {VERSION} ({GIT_HASH} {BUILD_DATE})");
-                return Ok(());
+            // Show full version info only if built from source with commit hash.
+            // Avoid showing a potentially confusing build date when installed via crates.io.    
+            if GIT_HASH.is_empty() {
+                    println!("dirstamp {VERSION}");
+                } else {
+                    println!("dirstamp {VERSION} ({GIT_HASH} {BUILD_DATE})");
+                }
+                    return Ok(());
             }
             _ if arg.starts_with('-') => {
                 eprintln!("Unknown option: {arg}\n\n{USAGE}");
