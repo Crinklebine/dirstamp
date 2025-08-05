@@ -3,110 +3,117 @@
 
 # dirstamp
 
-`dirstamp` is a tiny cross-platform command-line utility that **copies the
-_last-modified_ time (`mtime`) of the newest *item* in each directory (folder) onto the
-directory itself**.
+**dirstamp** updates the *modification timestamp* of each folder so that it matches the newest file (or folder) directly inside it.
 
-It’s perfect after migrations, restores, or bulk copies where all your folders
-suddenly say “today” even though the files inside may span years. Seeing an accurate
-date of your folders is useful to view data history by folder.
+This is useful when migrating or restoring folders, as some operating systems and tools do not preserve folder timestamps accurately.
+
 
 > **Example**  
-> You copy a folder on **2025-08-03**, so Windows shows its *Date modified* as  
-> **2025-08-03**. The newest file inside was actually last edited on  
-> **2024-07-28**. After running `dirstamp`, the folder’s *Date modified* is
+> You copy a folder on **2025-08-03**, so Windows shows its *Date modified* as **2025-08-03**. 
+> The newest file inside was actually last edited on  **2024-07-28**. 
+> After running `dirstamp -C`, the folder’s *Date modified* is
 > reset to **2024-07-28**, matching that newest file.
+
+## Usage
+
+```
+dirstamp [PATH] [OPTIONS]
+```
+If `PATH` is not specified, it defaults to the current directory.
+
+### Options
+
+| Flag          | Description                                |
+|---------------|--------------------------------------------|
+| `-C`, `--confirm` | Apply timestamp changes (dry-run is default) |
+| `-V`, `--version` | Show version info                       |
+| `-h`, `--help`    | Show usage info                         |
+
 
 ---
 
+## Console Output
+
+Example dry-run output:
+
+```
+would update ".\projects\beta"
+would update ".\projects\alpha"
+would update ".\projects"
+would update ".\media\photos"
+would update ".\media"
+would update ".\docs"
+would update "."
+
+Note: this was a dry run. Use -C to confirm and apply changes.
+```
+
+If no folders need updating:
+
+```
+No folder timestamps need updating.
+```
+
 ## Features
 
-| Feature               | Details                                                                                     |
-|-----------------------|---------------------------------------------------------------------------------------------|
-| **Deep-first walk**   | Children processed before parents so nested folders finish first.                           |
-| **Child-first logic** | Uses the newest **file** in a directory; if no files exist, falls back to the newest **immediate sub-folder**.      |
-| **Skip when current** | Touches a folder only if its timestamp differs by more than one second.                     |
-| **Cross-platform**    | Builds on Windows, Linux, and macOS (safe Rust, no platform-specific code paths).           |
+| Feature               | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| **File-first logic**      | Uses the newest file in a directory; if no files exist, it uses the newest subfolder. |
+| **Recursive**             | Processes the specified folder and all subfolders.                         |
+| **Dry run (default)**     | By default, runs without modifying anything. Shows what *would* change.     |
+| **Confirm mode**         | Use `-C` or `--confirm` to actually apply the timestamp updates.           |
+| **Simple CLI**            | Easy to use, Unix-style tool.                                               |
+| **Cross-platform**        | Works on Windows, Linux, and macOS.  
 | **Single binary**     | No runtime, no PowerShell execution-policy fuss—just run the EXE (or ELF/Mach-O).           |
 
 ---
 
-## Install with Cargo
+## Installation
 
-```bash
-cargo install dirstamp    # installs the latest published version
+### From [crates.io](https://crates.io/crates/dirstamp):
+
+```sh
+cargo install dirstamp
 ```
 
-## Quick start (Windows)
+---
 
-    # after you build or download dirstamp.exe
-    put dirstamp.exe in your path to have available in any cmd or powershell window
-    dirstamp.exe "D:\MigratedDocs"
-    or simply dirstamp.exe within the current directory
+## Building from Source
 
-Console output:
+Requires Rust 1.70+:
 
-```text
-updated ".\projects\beta"
-updated ".\projects\alpha"
-updated ".\projects"
-updated ".\media\photos"
-updated ".\media"
-updated ".\docs"
-updated "."
+```sh
+git clone https://github.com/Crinklebine/dirstamp
+cd dirstamp
+cargo build --release
 ```
----
 
-## Building from source
+Run it from the build output:
 
-1. **Install Rust** – <https://rustup.rs>  
-2. **Clone & build**
-
-       git clone https://github.com/Crinklebine/dirstamp.git
-       cd dirstamp
-       cargo build --release
-
-3. The binary is in `target/release/dirstamp[.exe]`.
-
-### Cross-compile a Windows build from Linux/macOS
-
-       rustup target add x86_64-pc-windows-gnu
-       cargo build --release --target x86_64-pc-windows-gnu
-       # → target/x86_64-pc-windows-gnu/release/dirstamp.exe
+```sh
+./target/release/dirstamp(.exe)
+```
 
 ---
 
-## Usage
+### Algorithm
 
-```text
-dirstamp [OPTIONS] [PATH]
+For each directory (depth-first traversal):
 
-Options
-  -h, --help       Show this help message and exit
-  -V, --version    Show program version and exit
+1. Find the newest modification time (`mtime`) of any file directly inside the directory (not recursively).
+2. If at least one file exists **and** the folder’s `mtime` differs by more than 1 second:
+    - Update the folder’s `mtime` to match the newest file’s `mtime`.
 
-Arguments
-  PATH             Root directory to process (default: current dir)
-  ```
+**Notes:**
 
-### Algorithm (simple version)
+- If no files exist, the newest immediate subfolder is used instead.
+- Empty directories are left unchanged.
+- Only the **modification time (`mtime`)** is updated; creation or birth time remains untouched.
+- Changes are applied only with `--confirm` (`-C`). By default, it's a dry run.
 
-    for each directory (deep-first):
-        newest_file_mtime = newest file directly inside
-        if such a file exists and folder.mtime differs by >1 s:
-            set folder.mtime = newest_file_mtime
-
-*Only **mtime** is updated; creation/birth time stays unchanged.*
 
 ---
 
-## Road-map / ideas
-
-* `--dry-run` preview mode  
-* `--oldest` flag (use earliest file instead)   
-* Continuous Integration build & release workflow  
-
----
 
 ## Contributing
 
