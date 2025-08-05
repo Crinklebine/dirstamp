@@ -22,7 +22,7 @@ const USAGE: &str = "\
 dirstamp {VERSION}
 
 Usage:
-  dirstamp [OPTIONS] [PATH]
+  dirstamp [PATH] [OPTIONS]
 
 Options:
   -C, --confirm     Actually apply changes (default is dry-run)
