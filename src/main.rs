@@ -36,6 +36,8 @@ fn main() -> io::Result<()> {
 
     let mut path_arg = None;
     let mut confirm = false;
+    let mut updated_count = 0;
+
 
     for arg in args {
         match arg.as_str() {
@@ -88,9 +90,16 @@ fn main() -> io::Result<()> {
                     } else {
                         println!("would update {:?}", entry.path());
                     }
+                    updated_count += 1;
                 }
             }
         }
+    }
+
+    if updated_count == 0 {
+        println!("No folder timestamps need updating.");
+    } else if !confirm {
+        println!("\nNote: this was a dry run. Use -C to confirm and apply changes.");
     }
 
     Ok(())
