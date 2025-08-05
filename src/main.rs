@@ -5,86 +5,42 @@
 //!   2. If no files exist, newest immediate sub-folder
 //! Empty directories are left unchanged.
 
+use std::env;
 use std::fs;
 use std::io;
 use std::path::Path;
 use std::time::SystemTime;
 
-use filetime::FileTime;
+use filetime::{set_file_mtime, FileTime};
 use walkdir::WalkDir;
 
-/// Program version, commit hash, and build date embedded at compile time.
-/// - VERSION comes from Cargo.toml
-/// - GIT_HASH and BUILD_DATE are set by build.rs
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const GIT_HASH: &str = env!("GIT_HASH");
 const BUILD_DATE: &str = env!("BUILD_DATE");
 
-/// One-paragraph help string shown with -h / --help.
-const USAGE: &str = r#"dirstamp [OPTIONS] [PATH]
+const USAGE: &str = "\
+dirstamp {VERSION}
 
-Synchronise each folder’s modified time to its newest item
-(files take priority; if none, newest immediate sub-folder).
+Usage:
+  dirstamp [OPTIONS] [PATH]
 
-Options
-  -h, --help       Show this help message and exit
-  -V, --version    Show version and exit
-
-Arguments
-  PATH             Root directory to process (default: current dir)
-"#;
-
-/// Return the newest modification time among direct children of `dir`.
-/// Files take priority; if no files are present, fall back to sub-folders.
-/// Returns `None` for an entirely empty directory.
-fn latest_child_mtime(dir: &Path) -> io::Result<Option<SystemTime>> {
-    let mut newest_file: Option<SystemTime> = None;
-    let mut newest_dir:  Option<SystemTime> = None;
-
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let meta  = entry.metadata()?;
-        let mtime = meta.modified()?;
-
-        if meta.is_file() {
-            if newest_file.map_or(true, |t| mtime > t) {
-                newest_file = Some(mtime);
-            }
-        } else if meta.is_dir() {
-            if newest_dir.map_or(true, |t| mtime > t) {
-                newest_dir = Some(mtime);
-            }
-        }
-    }
-    Ok(newest_file.or(newest_dir))
-}
-
-/// Update `folder`'s mtime if the chosen child time differs by >1 s.
-fn sync_folder_mtime(folder: &Path) -> io::Result<()> {
-    if let Some(child_mtime) = latest_child_mtime(folder)? {
-        let folder_mtime = fs::metadata(folder)?.modified()?;
-        let diff = child_mtime
-            .duration_since(folder_mtime)
-            .unwrap_or_else(|e| e.duration());
-
-        if diff.as_secs() > 1 {
-            filetime::set_file_mtime(folder, FileTime::from_system_time(child_mtime))?;
-            println!("updated {:?}", folder.display());
-        }
-    }
-    Ok(())
-}
-
+Options:
+  -C, --confirm     Actually apply changes (default is dry-run)
+  -V, --version     Show version information
+  -h, --help        Show this help message
+";
 
 fn main() -> io::Result<()> {
-    // Parse command-line arguments.
-    let mut args = std::env::args().skip(1);          // iterator of remaining CLI args
-    let mut root   = ".".to_string();                 // default path
+    let mut args = env::args();
+    let _program = args.next(); // skip program name
 
-    while let Some(arg) = args.next() {
+    let mut path_arg = None;
+    let mut confirm = false;
+
+    for arg in args {
         match arg.as_str() {
             "-h" | "--help" => {
-                println!("{USAGE}");
+                println!("{}", USAGE.replace("{VERSION}", VERSION));
                 return Ok(());
             }
             "-V" | "--version" => {
@@ -97,36 +53,70 @@ fn main() -> io::Result<()> {
                 }
                     return Ok(());
             }
-            _ if arg.starts_with('-') => {
-                eprintln!("Unknown option: {arg}\n\n{USAGE}");
-                std::process::exit(1);
+            "-C" | "--confirm" => {
+                confirm = true;
+            }
+            _ if path_arg.is_none() => {
+                path_arg = Some(arg);
             }
             _ => {
-                // first non-flag = path argument
-                root = arg;
-                break;                 // stop option parsing
+                eprintln!("Unknown argument: {}", arg);
+                return Ok(());
             }
         }
     }
 
-    // build remaining program using `root`
-    let root_path = Path::new(&root);
-
-    // Collect every directory, children before parents (deep-first).
-    let mut folders: Vec<_> = WalkDir::new(root_path)
+    let root = Path::new(path_arg.as_deref().unwrap_or("."));
+    let mut dirs: Vec<_> = WalkDir::new(root)
+        .follow_links(false)
         .into_iter()
-        .filter_map(Result::ok)
+        .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_dir())
-        .map(|e| e.into_path())
         .collect();
 
-    // Reverse alphabetic order ensures deepest paths first.
-    folders.sort_by(|a, b| b.to_string_lossy().cmp(&a.to_string_lossy()));
+    dirs.sort_by_key(|e| std::cmp::Reverse(e.path().to_path_buf()));
 
-    for folder in folders {
-        if let Err(err) = sync_folder_mtime(&folder) {
-            eprintln!("skipped {:?}: {}", folder.display(), err);
+    for entry in dirs {
+        if let Ok(metadata) = fs::metadata(entry.path()) {
+            let dir_mtime = metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+
+            if let Some(latest) = find_latest_mtime(entry.path()).unwrap_or(None) {
+                if dir_mtime != latest {
+                    if confirm {
+                        set_folder_mtime(entry.path(), latest)?;
+                        println!("updated {:?}", entry.path());
+                    } else {
+                        println!("would update {:?}", entry.path());
+                    }
+                }
+            }
         }
     }
+
     Ok(())
+}
+
+fn find_latest_mtime(path: &Path) -> io::Result<Option<SystemTime>> {
+    let mut newest_file: Option<SystemTime> = None;
+    let mut newest_dir: Option<SystemTime> = None;
+
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let meta = entry.metadata()?;
+
+        let modified = meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+
+        if meta.is_file() {
+            newest_file = Some(newest_file.map_or(modified, |curr| curr.max(modified)));
+        } else if meta.is_dir() {
+            newest_dir = Some(newest_dir.map_or(modified, |curr| curr.max(modified)));
+        }
+    }
+
+    Ok(newest_file.or(newest_dir))
+}
+
+fn set_folder_mtime(path: &Path, mtime: SystemTime) -> io::Result<()> {
+    let ft = FileTime::from_system_time(mtime);
+    set_file_mtime(path, ft)
 }
