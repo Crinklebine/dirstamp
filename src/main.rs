@@ -13,8 +13,12 @@ use std::time::SystemTime;
 use filetime::FileTime;
 use walkdir::WalkDir;
 
-/// Program version is taken from Cargo.toml
+/// Program version, commit hash, and build date embedded at compile time.
+/// - VERSION comes from Cargo.toml
+/// - GIT_HASH and BUILD_DATE are set by build.rs
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const GIT_HASH: &str = env!("GIT_HASH");
+const BUILD_DATE: &str = env!("BUILD_DATE");
 
 /// One-paragraph help string shown with -h / --help.
 const USAGE: &str = r#"dirstamp [OPTIONS] [PATH]
@@ -84,7 +88,7 @@ fn main() -> io::Result<()> {
                 return Ok(());
             }
             "-V" | "--version" => {
-                println!("dirstamp {VERSION}");
+                println!("dirstamp {VERSION} ({GIT_HASH} {BUILD_DATE})");
                 return Ok(());
             }
             _ if arg.starts_with('-') => {

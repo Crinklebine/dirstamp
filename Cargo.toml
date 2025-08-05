@@ -16,3 +16,6 @@ exclude = ["assets/*", "test/*", "**/*.zip"]
 [dependencies]
 walkdir  = "2"
 filetime = "0.2"
+
+[build-dependencies]
+chrono = { version = "0.4", default-features = false, features = ["alloc", "clock"] }
