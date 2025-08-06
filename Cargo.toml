@@ -2,7 +2,7 @@
 name        = "dirstamp"
 version     = "0.1.2"
 edition     = "2021"                       # 2024 edition is still nightly-only
-description = "Sync a directory's modified time to its newest (or earliest) item."
+description = "Sync a directory's modified time to its newest contained item."
 readme      = "README.md"
 license     = "MIT"
 repository  = "https://github.com/Crinklebine/dirstamp"
