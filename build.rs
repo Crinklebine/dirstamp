@@ -12,9 +12,9 @@ fn main() {
         .trim()
         .to_owned();
 
-    // ----- build date (YYYY-MM-DD) -----
-    // Use UTC date so builds are reproducible.
-    let build_date = chrono::Utc::now().format("%Y-%m-%d").to_string();
+    // ----- build date + time (UTC) -----
+    // Keep UTC for reproducible logs.
+    let build_date = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC").to_string();
 
     // Export as env vars for rustc
     println!("cargo:rustc-env=GIT_HASH={git_hash}");
