@@ -26,6 +26,7 @@ If `PATH` is not specified, it defaults to the current directory.
 | Flag          | Description                                |
 |---------------|--------------------------------------------|
 | `-C`, `--confirm` | Apply timestamp changes (dry-run is default) |
+| `-D`, `--show-dates` | Show the human-readable timestamp each folder would be updated to |
 | `-V`, `--version` | Show version info                       |
 | `-h`, `--help`    | Show usage info                         |
 
@@ -34,16 +35,15 @@ If `PATH` is not specified, it defaults to the current directory.
 
 ## Console Output
 
-Example dry-run output:
+Example dry-run output with -D:
 
 ```
-would update ".\projects\beta"
-would update ".\projects\alpha"
-would update ".\projects"
-would update ".\media\photos"
-would update ".\media"
-would update ".\docs"
-would update "."
+would update ".\\test\\dirstamp_test\\media\\photos" (from 2025-08-03 08:07:08 UTC to 2025-08-01 08:07:08 UTC, -2.0 days)
+would update ".\\test\\dirstamp_test\\projects\\alpha" (from 2025-08-03 08:07:08 UTC to 2025-07-19 08:07:08 UTC, -15.0 days)
+would update ".\\test\\dirstamp_test\\projects\\beta" (from 2025-08-03 08:07:08 UTC to 2025-07-31 08:07:08 UTC, -3.0 days)
+would update ".\\test\\dirstamp_test\\docs" (from 2025-08-03 08:07:08 UTC to 2025-07-04 08:07:08 UTC, -30.0 days)
+would update ".\\test\\dirstamp_test\\media" (from 2025-08-03 08:07:08 UTC to 2025-07-24 08:07:08 UTC, -10.0 days)
+would update ".\\test\\dirstamp_test\\" (from 2025-08-14 13:46:06 UTC to 2025-08-03 08:07:08 UTC, -11.2 days)
 
 Note: this was a dry run. Use -C to confirm and apply changes.
 ```
@@ -61,6 +61,7 @@ No folder timestamps need updating.
 | **File-first logic**      | Uses the newest file in a directory; if no files exist, it uses the newest subfolder. |
 | **Recursive**             | Processes the specified folder and all subfolders.                         |
 | **Dry run (default)**     | By default, runs without modifying anything. Shows what *would* change.     |
+| **Show dates**     | Use -D or --show-dates to display the human-readable timestamp each folder would be updated to     |
 | **Confirm mode**         | Use `-C` or `--confirm` to actually apply the timestamp updates.           |
 | **Simple CLI**            | Easy to use, Unix-style tool.                                               |
 | **Cross-platform**        | Works on Windows, Linux, and macOS.  

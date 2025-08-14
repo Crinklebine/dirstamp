@@ -1,6 +1,6 @@
 [package]
 name        = "dirstamp"
-version     = "0.1.2"
+version     = "0.1.3"
 edition     = "2021"                       # 2024 edition is still nightly-only
 description = "Sync a directory's modified time to its newest contained item."
 readme      = "README.md"
@@ -16,6 +16,7 @@ exclude = ["assets/*", "test/*", "**/*.zip"]
 [dependencies]
 walkdir  = "2"
 filetime = "0.2"
+time = { version = "0.3.41", features = ["formatting"] }
 
 [build-dependencies]
 chrono = { version = "0.4", default-features = false, features = ["alloc", "clock"] }
