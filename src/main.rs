@@ -98,35 +98,43 @@ fn set_folder_mtime(path: &Path, mtime: SystemTime) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-    // ---- parse args (simple hand-rolled flags) ----
-    let mut confirm = false;
-    let mut show_dates = false;
-    let mut path_arg: Option<String> = None;
+// ---- parse CLI -------------------------------------------------------------
+let mut confirm = false;
+let mut show_dates = false;
+let mut path_arg: Option<PathBuf> = None;
 
-    let mut args = env::args().skip(1).peekable();
-    while let Some(arg) = args.next() {
+let mut end_of_opts = false;
+for arg in env::args().skip(1) {
+    if !end_of_opts {
         match arg.as_str() {
             "-h" | "--help" => print_help_and_exit(),
             "-V" | "--version" => print_version_and_exit(),
-            "-C" | "--confirm" => confirm = true,
-            "-D" | "--show-dates" => show_dates = true,
+            "-C" | "--confirm" => { confirm = true; continue; }
+            "-D" | "--show-dates" => { show_dates = true; continue; }
+            "--" => { end_of_opts = true; continue; } // everything after is positional
             s if s.starts_with('-') => {
                 eprintln!("Unknown option: {s}");
                 print_help_and_exit();
             }
-            _ => {
-                path_arg = Some(arg);
-                // First non-flag is the root; ignore any further args.
-                break;
-            }
+            _ => { /* fall through to treat as positional PATH below */ }
         }
     }
 
-    let root: PathBuf = PathBuf::from(path_arg.unwrap_or_else(|| ".".to_string()));
-    if !root.exists() {
-        eprintln!("Path does not exist: {}", root.display());
-        std::process::exit(2);
+    // Positional PATH handling (first one wins)
+    if path_arg.is_none() {
+        path_arg = Some(PathBuf::from(&arg));
+    } else {
+        eprintln!("Unexpected extra argument: {}", arg);
+        print_help_and_exit();
     }
+}
+
+let root: PathBuf = path_arg.unwrap_or_else(|| PathBuf::from("."));
+if !root.exists() {
+    eprintln!("Path does not exist: {}", root.display());
+    std::process::exit(2);
+}
+
 
     // ---- collect directories and process child-before-parent ----
     let mut dirs: Vec<DirEntry> = Vec::new();

@@ -17,7 +17,7 @@ This is useful when migrating or restoring folders, as some operating systems an
 ## Usage
 
 ```
-dirstamp [PATH] [OPTIONS]
+dirstamp [PATH] [OPTIONS] (path and options order are interchangable)
 ```
 If `PATH` is not specified, it defaults to the current directory.
 
